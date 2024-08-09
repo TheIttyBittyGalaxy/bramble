@@ -15,10 +15,18 @@ typedef struct
     {
         INVALID,
 
+        EQUAL,
         DIVIDE,
+        BRACKET_L,
+        BRACKET_R,
+        CURLY_L,
+        CURLY_R,
 
         NUM_LIT,
         IDENTITY,
+
+        KEY_FUN,
+        KEY_VAR,
 
         END_OF_FILE,
     };
@@ -28,13 +36,6 @@ typedef struct
     size_t column;
     size_t position;
     size_t length;
-
-    // Token(Kind kind, size_t line, size_t column, size_t position, size_t length)
-    //     : kind(kind),
-    //       line(line),
-    //       column(column),
-    //       position(position),
-    //       length(length) {}
 } Token;
 
 string token_name(Token::Kind kind)
@@ -44,19 +45,34 @@ string token_name(Token::Kind kind)
     case Token::Kind::INVALID:
         return "INVALID";
 
+    case Token::Kind::EQUAL:
+        return "EQUAL";
     case Token::Kind::DIVIDE:
         return "DIVIDE";
+    case Token::Kind::BRACKET_L:
+        return "BRACKET_L";
+    case Token::Kind::BRACKET_R:
+        return "BRACKET_R";
+    case Token::Kind::CURLY_L:
+        return "CURLY_L";
+    case Token::Kind::CURLY_R:
+        return "CURLY_R";
 
     case Token::Kind::NUM_LIT:
         return "NUM_LIT";
     case Token::Kind::IDENTITY:
         return "IDENTITY";
 
+    case Token::Kind::KEY_FUN:
+        return "KEY_FUN";
+    case Token::Kind::KEY_VAR:
+        return "KEY_VAR";
+
     case Token::Kind::END_OF_FILE:
         return "END_OF_FILE";
 
     default:
-        return "name not specified in token_name(Token::Kind)";
+        return "name of token kind not specified in token_name(Token::Kind)";
     }
 };
 
@@ -175,6 +191,35 @@ void lex_source_file(SourceFile &source)
             }
         }
 
+        // SYMBOLS
+        else if (character == '=')
+        {
+            advance();
+            emit(Token::Kind::EQUAL);
+        }
+
+        else if (character == '(')
+        {
+            advance();
+            emit(Token::Kind::BRACKET_L);
+        }
+        else if (character == ')')
+        {
+            advance();
+            emit(Token::Kind::BRACKET_R);
+        }
+
+        else if (character == '{')
+        {
+            advance();
+            emit(Token::Kind::CURLY_L);
+        }
+        else if (character == '}')
+        {
+            advance();
+            emit(Token::Kind::CURLY_R);
+        }
+
         // NUMBER LITERALS
         else if (is_digit(character))
         {
@@ -197,7 +242,14 @@ void lex_source_file(SourceFile &source)
             while (is_word(character))
                 advance();
 
-            emit(Token::Kind::IDENTITY);
+            string word = source.content.substr(token_position, position - token_position);
+
+            if (word == "fun")
+                emit(Token::Kind::KEY_FUN);
+            else if (word == "var")
+                emit(Token::Kind::KEY_VAR);
+            else
+                emit(Token::Kind::IDENTITY);
         }
 
         // ERROR
