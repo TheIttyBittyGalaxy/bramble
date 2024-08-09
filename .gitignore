@@ -1,2 +1,4 @@
-*.exe
 /local
+/.vscode
+
+*.exe
