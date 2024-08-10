@@ -17,27 +17,30 @@ using ptr = shared_ptr<T>;
 
 // SOURCE FILES AND TOKENS  //
 
+#define TOKEN_KINDS(X) \
+    X(INVALID)         \
+    X(EQUAL)           \
+    X(DIVIDE)          \
+    X(BRACKET_L)       \
+    X(BRACKET_R)       \
+    X(CURLY_L)         \
+    X(CURLY_R)         \
+    X(NUM_LIT)         \
+    X(IDENTITY)        \
+    X(KEY_FUN)         \
+    X(KEY_VAR)         \
+    X(END_OF_FILE)
+
 typedef struct
 {
+#define STATE(name) name,
+
     enum class Kind
     {
-        INVALID,
-
-        EQUAL,
-        DIVIDE,
-        BRACKET_L,
-        BRACKET_R,
-        CURLY_L,
-        CURLY_R,
-
-        NUM_LIT,
-        IDENTITY,
-
-        KEY_FUN,
-        KEY_VAR,
-
-        END_OF_FILE,
+        TOKEN_KINDS(STATE)
     };
+
+#undef STATE
 
     Kind kind;
     size_t line;
@@ -48,40 +51,19 @@ typedef struct
 
 string token_name(Token::Kind kind)
 {
+
+#define STATE(name)         \
+    case Token::Kind::name: \
+        return #name;
+
     switch (kind)
     {
-    case Token::Kind::INVALID:
-        return "INVALID";
-
-    case Token::Kind::EQUAL:
-        return "EQUAL";
-    case Token::Kind::DIVIDE:
-        return "DIVIDE";
-    case Token::Kind::BRACKET_L:
-        return "BRACKET_L";
-    case Token::Kind::BRACKET_R:
-        return "BRACKET_R";
-    case Token::Kind::CURLY_L:
-        return "CURLY_L";
-    case Token::Kind::CURLY_R:
-        return "CURLY_R";
-
-    case Token::Kind::NUM_LIT:
-        return "NUM_LIT";
-    case Token::Kind::IDENTITY:
-        return "IDENTITY";
-
-    case Token::Kind::KEY_FUN:
-        return "KEY_FUN";
-    case Token::Kind::KEY_VAR:
-        return "KEY_VAR";
-
-    case Token::Kind::END_OF_FILE:
-        return "END_OF_FILE";
-
-    default:
-        return "name of token kind not specified in token_name(Token::Kind)";
+        TOKEN_KINDS(STATE)
     }
+
+#undef STATE
+
+    return "name of token kind not specified in token_name(Token::Kind)";
 };
 
 typedef struct
