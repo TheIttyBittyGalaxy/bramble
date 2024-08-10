@@ -573,6 +573,24 @@ public:
 
 // MAIN PROGRAM //
 
+template <typename T>
+void dump(ptr<T> data, string file_name)
+{
+    string file_path = "local/" + file_name + ".json";
+    std::ofstream file;
+    file.open(file_path);
+
+    if (!file.is_open())
+    {
+        cout << "Error attempting to save data to " << file_path << endl;
+        return;
+    }
+
+    file << to_json(data);
+    cout << "Saved data to " << file_path << endl;
+    file.close();
+}
+
 int main(int argc, char *argv[])
 {
     // Validate parameters
@@ -611,7 +629,7 @@ int main(int argc, char *argv[])
     parser.parse_source(&source);
 
     cout << "PARSER" << endl;
-    cout << to_json(program);
+    dump(program, "parser");
     cout << endl;
 
     // TODO: Generate
