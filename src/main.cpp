@@ -286,6 +286,7 @@ struct Scope
 {
     ptr<Scope> parent;
     vector<ptr<Variable>> variables;
+    vector<ptr<Function>> functions;
 };
 
 typedef struct
@@ -306,12 +307,13 @@ typedef struct
         return expr;
     }
 
-    ptr<Function> create_function(string name, ptr<Scope> scope)
+    ptr<Function> create_function(ptr<Scope> scope, string name)
     {
         auto funct = CREATE(Function);
         funct->name = name;
-        funct->scope = scope;
+        funct->scope = create_scope(scope);
 
+        scope->functions.push_back(funct);
         functions.emplace_back(funct);
         return funct;
     }
@@ -321,8 +323,8 @@ typedef struct
         auto var = CREATE(Variable);
         var->name = name;
 
-        variables.emplace_back(var);
         scope->variables.push_back(var);
+        variables.emplace_back(var);
         return var;
     }
 
@@ -441,13 +443,13 @@ string to_json(ptr<Scope> node)
 {
     NODE_START();
     NODE_KEY(variables);
+    NODE_KEY(functions);
     NODE_FLUSH();
 }
 
 string to_json(ptr<Program> node)
 {
     NODE_START();
-    NODE_KEY(functions);
     NODE_KEY(root);
     NODE_FLUSH();
 }
@@ -529,10 +531,9 @@ public:
         // TODO: Parse parameters
         consume_or_throw(Token::Kind::BRACKET_R);
 
-        auto funct_scope = program->create_scope(scope);
-        auto funct = program->create_function(get_str(source, id), funct_scope);
+        auto funct = program->create_function(scope, get_str(source, id));
 
-        parse_block(funct_scope);
+        parse_block(funct->scope);
 
         return funct;
     }
